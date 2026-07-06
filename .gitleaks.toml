@@ -1,0 +1,37 @@
+# Gitleaks configuration — DevSecOps lab (OWASP Juice Shop)
+# Docs: https://github.com/gitleaks/gitleaks#configuration
+#
+# Strategy:
+#   1. Inherit Gitleaks' full built-in ruleset (100+ detectors).
+#   2. Triage findings over time by adding *justified* allowlist entries below.
+#
+# NOTE: Juice Shop intentionally ships test secrets and crypto keys. The first
+# scan is SUPPOSED to fail. Your job is to review each finding and decide:
+#   - real secret        -> remove it, rotate it, and (if in history) purge it.
+#   - intentional/test   -> allowlist it here WITH a comment explaining why.
+# Never allowlist something you haven't personally verified is safe.
+
+title = "Gitleaks config — Juice Shop DevSecOps lab"
+
+[extend]
+# Start from Gitleaks' default rules instead of writing detectors from scratch.
+useDefault = true
+
+# ── Allowlist (add ONLY during triage) ──────────────────────────────────────
+# Gitleaks requires that an allowlist block contain at least ONE real check
+# (paths, regexes, commits or stopwords). An empty allowlist is a config error,
+# so we do NOT declare one yet — the first scan is meant to find everything.
+#
+# When you confirm a finding is safe (e.g. an intentional test key), uncomment
+# the block below and add the entry, always with a justification comment:
+#
+# [[allowlists]]
+# description = "Reviewed, intentional test material — safe to ignore"
+# paths = [
+#   '''^ctf\.key$''',            # CTF flag key, not a real credential
+#   '''^encryptionkeys/.*''',    # demo RSA/JWT keys shipped for the challenges
+# ]
+#
+# Alternatively, list reviewed finding fingerprints (one per line) in a
+# `.gitleaksignore` file at the repo root, format:
+#   <commit>:<file>:<rule-id>:<line>
