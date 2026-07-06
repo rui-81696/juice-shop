@@ -17,21 +17,29 @@ title = "Gitleaks config — Juice Shop DevSecOps lab"
 # Start from Gitleaks' default rules instead of writing detectors from scratch.
 useDefault = true
 
-# ── Allowlist (add ONLY during triage) ──────────────────────────────────────
-# Gitleaks requires that an allowlist block contain at least ONE real check
-# (paths, regexes, commits or stopwords). An empty allowlist is a config error,
-# so we do NOT declare one yet — the first scan is meant to find everything.
+# ── Hybrid allowlist strategy ────────────────────────────────────────────────
+# We split responsibility on purpose:
 #
-# When you confirm a finding is safe (e.g. an intentional test key), uncomment
-# the block below and add the entry, always with a justification comment:
+#   * .gitleaksignore  -> pins the exact HISTORICAL findings we reviewed (194).
+#                         Precise, but tied to commit:file:line.
+#   * this allowlist    -> ignores whole PATHS that can't reasonably hold a real
+#                         secret (binaries, lockfiles, minified bundles). These
+#                         are noise-by-nature, so ignoring them does NOT weaken
+#                         detection in source code.
 #
-# [[allowlists]]
-# description = "Reviewed, intentional test material — safe to ignore"
-# paths = [
-#   '''^ctf\.key$''',            # CTF flag key, not a real credential
-#   '''^encryptionkeys/.*''',    # demo RSA/JWT keys shipped for the challenges
-# ]
+# IMPORTANT: we deliberately do NOT allowlist test/, cypress/ or data/ here.
+# Real secrets do leak through test files, so those dirs stay strict and are
+# only covered for the known historical findings via .gitleaksignore.
 #
-# Alternatively, list reviewed finding fingerprints (one per line) in a
-# `.gitleaksignore` file at the repo root, format:
-#   <commit>:<file>:<rule-id>:<line>
+# When you confirm a NEW finding is a safe/intentional test secret, prefer:
+#   - a `# gitleaks:allow` comment on that exact line, or
+#   - adding its fingerprint to .gitleaksignore.
+
+[[allowlists]]
+description = "Binary, lockfile and minified paths: not a source of real secrets"
+paths = [
+  '''(.*?)(jpg|jpeg|png|gif|svg|ico|webp|bmp|woff|woff2|ttf|eot|mp3|mp4|pdf)$''',
+  '''(.*/)?package-lock\.json$''',
+  '''(.*/)?yarn\.lock$''',
+  '''.*\.min\.(js|css)$''',
+]
