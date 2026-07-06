@@ -17,27 +17,21 @@ title = "Gitleaks config — Juice Shop DevSecOps lab"
 # Start from Gitleaks' default rules instead of writing detectors from scratch.
 useDefault = true
 
-[allowlist]
-description = "Reviewed, intentional test material — safe to ignore"
-
-# ── Paths that are safe by design ───────────────────────────────────────────
-# Uncomment / add entries only AFTER reviewing them. Examples of files that are
-# intentional test fixtures in Juice Shop (verify before trusting):
-paths = [
-  # '''^encryptionkeys/.*''',        # demo RSA/JWT keys shipped for challenges
-  # '''^ctf\.key$''',                # CTF flag key, not a real credential
-  # '''.*\.test\.ts$''',             # mock secrets inside unit tests
-  # '''^frontend/src/assets/.*''',   # static demo assets
-]
-
-# ── Specific values to ignore (regex) ───────────────────────────────────────
-regexes = [
-  # '''EXAMPLE_FAKE_TOKEN_[0-9a-f]+''',
-]
-
-# ── Baseline by fingerprint (most precise) ──────────────────────────────────
-# Each finding has a stable fingerprint like:
+# ── Allowlist (add ONLY during triage) ──────────────────────────────────────
+# Gitleaks requires that an allowlist block contain at least ONE real check
+# (paths, regexes, commits or stopwords). An empty allowlist is a config error,
+# so we do NOT declare one yet — the first scan is meant to find everything.
+#
+# When you confirm a finding is safe (e.g. an intentional test key), uncomment
+# the block below and add the entry, always with a justification comment:
+#
+# [[allowlists]]
+# description = "Reviewed, intentional test material — safe to ignore"
+# paths = [
+#   '''^ctf\.key$''',            # CTF flag key, not a real credential
+#   '''^encryptionkeys/.*''',    # demo RSA/JWT keys shipped for the challenges
+# ]
+#
+# Alternatively, list reviewed finding fingerprints (one per line) in a
+# `.gitleaksignore` file at the repo root, format:
 #   <commit>:<file>:<rule-id>:<line>
-# Add reviewed ones here to silence exactly that occurrence and nothing else.
-# You can also keep them in a `.gitleaksignore` file (one fingerprint per line).
-# commits = []
