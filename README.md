@@ -1,19 +1,47 @@
-# DevSecOps Pipeline — OWASP Juice Shop
+# Security Lab — OWASP Juice Shop (DevSecOps + Pentesting)
 
-Secure CI/CD pipeline built on top of OWASP Juice Shop, integrating
-security gates across the SDLC: secrets scanning, SAST, SCA,
-container scanning and DAST.
+A hands-on learning project built on top of OWASP Juice Shop, split into two
+complementary tracks: **defending** the application with a secure CI/CD pipeline,
+and **attacking** it as a pentester and documenting each finding.
 
 > Based on [OWASP Juice Shop](https://github.com/juice-shop/juice-shop) (MIT License).
 
-## Pipeline stages
+## Project tracks
+
+| Track | Goal | Lives in |
+|-------|------|----------|
+| 🛡️ **DevSecOps** | Build a secure CI/CD pipeline with security gates across the SDLC | this repo root + `.github/workflows/` |
+| 🗡️ **Pentesting** | Exploit a running instance and write up each finding (attack → defense) | [`pentest/`](./pentest/) |
+
+The two tracks close a loop: every vulnerability found in the pentesting track should
+map back to a pipeline gate that would detect or mitigate it.
+
+---
+
+## 🛡️ DevSecOps pipeline
+
+Secure CI/CD pipeline integrating security gates across the SDLC: secrets scanning,
+SAST, SCA, container scanning and DAST.
+
+### Pipeline stages
 _(em construção — diagrama na Fase 7)_
 
-## Tools
+### Tools
 | Stage | Tool | Status |
 |-------|------|--------|
-| Secrets scanning | Gitleaks | 🔜 |
+| Secrets scanning | Gitleaks | ✅ |
 | SAST | Semgrep | 🔜 |
 | SCA | Trivy | 🔜 |
 | Container scan | Trivy + Hadolint | 🔜 |
 | DAST | OWASP ZAP | 🔜 |
+
+---
+
+## 🗡️ Pentesting
+
+Offensive-security track: attacking a local instance of Juice Shop and documenting
+each finding as a professional-style writeup (impact, PoC, remediation, and the
+DevSecOps gate that would have caught it).
+
+All testing targets **my own local instance only** — see [`pentest/README.md`](./pentest/README.md)
+for methodology, target setup, and the writeups index.

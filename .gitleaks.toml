@@ -1,0 +1,43 @@
+# Gitleaks configuration — DevSecOps lab (OWASP Juice Shop)
+# Docs: https://github.com/gitleaks/gitleaks#configuration
+#
+# Strategy:
+#   1. Inherit Gitleaks' full built-in ruleset (100+ detectors).
+#   2. Triage findings over time by adding *justified* allowlist entries below.
+#
+# NOTE: Juice Shop intentionally ships test secrets and crypto keys. The first
+# scan is SUPPOSED to fail. Your job is to review each finding and decide:
+#   - real secret        -> remove it, rotate it, and (if in history) purge it.
+#   - intentional/test   -> allowlist it here WITH a comment explaining why.
+# Never allowlist something you haven't personally verified is safe.
+
+title = "Gitleaks config — Juice Shop DevSecOps lab"
+
+[extend]
+# Start from Gitleaks' default rules instead of writing detectors from scratch.
+useDefault = true
+
+[allowlist]
+description = "Reviewed, intentional test material — safe to ignore"
+
+# ── Paths that are safe by design ───────────────────────────────────────────
+# Uncomment / add entries only AFTER reviewing them. Examples of files that are
+# intentional test fixtures in Juice Shop (verify before trusting):
+paths = [
+  # '''^encryptionkeys/.*''',        # demo RSA/JWT keys shipped for challenges
+  # '''^ctf\.key$''',                # CTF flag key, not a real credential
+  # '''.*\.test\.ts$''',             # mock secrets inside unit tests
+  # '''^frontend/src/assets/.*''',   # static demo assets
+]
+
+# ── Specific values to ignore (regex) ───────────────────────────────────────
+regexes = [
+  # '''EXAMPLE_FAKE_TOKEN_[0-9a-f]+''',
+]
+
+# ── Baseline by fingerprint (most precise) ──────────────────────────────────
+# Each finding has a stable fingerprint like:
+#   <commit>:<file>:<rule-id>:<line>
+# Add reviewed ones here to silence exactly that occurrence and nothing else.
+# You can also keep them in a `.gitleaksignore` file (one fingerprint per line).
+# commits = []
