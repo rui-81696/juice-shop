@@ -43,16 +43,3 @@ paths = [
   '''(.*/)?yarn\.lock$''',
   '''.*\.min\.(js|css)$''',
 ]
-
-# ── Custom rule: catch inline / single-line private keys ─────────────────────
-# The default `private-key` rule expects a MULTI-LINE PEM block. Juice Shop's
-# lib/insecurity.ts stores the RSA key on ONE line with escaped `\r\n`, so the
-# default rule misses it entirely (documented in pentest/writeups/01-...).
-# This rule closes that blind spot: it matches a PEM header immediately followed
-# by an ESCAPED newline (`\n` or `\r\n` as literal text) and base64.
-[[rules]]
-id = "inline-rsa-private-key"
-description = "Hard-coded private key inlined on a single line (escaped newlines)"
-regex = '''-----BEGIN (?:[A-Z]+ )?PRIVATE KEY-----(?:\\r)?\\n[A-Za-z0-9+/]{40,}'''
-keywords = ["private key"]
-tags = ["private-key", "custom", "juice-shop"]
