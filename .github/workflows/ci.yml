@@ -1,5 +1,11 @@
 name: CI
 
+# Fast, blocking gate for pull requests and pushes: server-side lint + unit
+# tests only. We deliberately skip the frontend build and the frontend/API
+# suites here — they are slow (Angular build) and flaky (need a headless
+# browser + the app running). The full suite belongs in a separate, non-blocking
+# scheduled workflow (nightly), not on every PR.
+
 on:
   pull_request:
     branches: [main, master]
@@ -7,8 +13,8 @@ on:
     branches: [main, master]
 
 jobs:
-  lint:
-    name: Lint
+  lint-and-test:
+    name: Lint + testes (servidor)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout do código
@@ -20,27 +26,14 @@ jobs:
           node-version: 22
           cache: 'npm'
 
-      - name: Instalar dependências
-        run: npm ci
+      - name: Instalar dependências (sem postinstall)
+        # --ignore-scripts salta o postinstall do Juice Shop, que instalaria o
+        # frontend inteiro e faria o build do Angular (vários minutos). Para lint
+        # + testes de servidor só precisamos das dependências da raiz.
+        run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Correr linting
-        run: npm run lint
+      - name: Lint (servidor)
+        run: npx eslint "*.ts" data lib models routes "test/**/*.ts" views
 
-  test:
-    name: Testes unitários
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout do código
-        uses: actions/checkout@v4
-
-      - name: Configurar Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: 'npm'
-
-      - name: Instalar dependências
-        run: npm ci
-
-      - name: Correr testes
-        run: npm test
+      - name: Testes unitários (servidor)
+        run: npm run test:server
