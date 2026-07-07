@@ -9,16 +9,22 @@ Detects hard-coded secrets (API keys, tokens, private keys, passwords) in the
 code **and the entire git history**, on every push and pull request. If a secret
 is found, the build fails and blocks the merge (`--exit-code 1`).
 
-## Where Gitleaks runs (3 contexts)
+## Where Gitleaks runs (layered, like real teams)
 
 | Context | Where | When |
 |---------|-------|------|
-| **CI** | A fresh Ubuntu runner in GitHub's cloud | Every push / PR (see `.github/workflows/secrets-scan.yml`) |
-| **Local** | Your own machine | When you want to check before pushing, or to (re)generate the baseline |
-| **Docker** | A container (any machine with Docker) | Alternative to installing the binary |
+| **Pre-commit** | Your machine, before the commit exists | Every `git commit` (staged changes) — the earliest, cheapest catch |
+| **CI · PR diff** | Fresh Ubuntu runner | Every pull request — scans only the PR's new commits (fast; fails only on secrets the PR adds) |
+| **CI · full history** | Fresh Ubuntu runner | Push to default branch + weekly schedule — full-history safety net |
+| **Local (manual)** | Your own machine | Ad-hoc checks, or (re)generating the baseline |
+| **Docker** | A container | Alternative to installing the binary |
 
 Gitleaks only *reads* the repo — it doesn't live inside it. The workflow file is
 stored in the repo but executes on the runner.
+
+Why not scan full history on every PR? Because it is slow and would re-flag old,
+already-triaged findings. PRs scan just `base..head`; the full sweep runs on a
+schedule instead.
 
 ## Running Gitleaks locally
 
@@ -91,6 +97,26 @@ Remove-Item report.json                          # contains real secrets — nev
 
 Then commit **only** `.gitleaksignore`.
 
+## Pre-commit hook (shift left to the laptop)
+
+The cheapest place to catch a secret is before the commit exists. We use the
+[pre-commit](https://pre-commit.com/) framework with `.pre-commit-config.yaml`.
+
+One-time setup per clone:
+
+```bash
+pip install pre-commit     # or: pipx install pre-commit
+pre-commit install         # installs the hook into .git/hooks
+```
+
+After that, every `git commit` runs gitleaks on the staged changes and blocks the
+commit if it finds a secret. It reuses this repo's `.gitleaks.toml` and
+`.gitleaksignore`, so local and CI stay in sync. Emergency bypass (use sparingly):
+
+```bash
+SKIP=gitleaks git commit -m "..."
+```
+
 ## Triaging a new finding
 
 When the gate fails on a *new* finding, decide:
@@ -105,6 +131,7 @@ Never allowlist something you haven't personally verified is safe.
 
 ## Files that make up this stage
 
-- `.github/workflows/secrets-scan.yml` — the CI job.
-- `.gitleaks.toml` — config (extends the default ruleset).
+- `.github/workflows/secrets-scan.yml` — the CI jobs (PR-diff + full-history).
+- `.pre-commit-config.yaml` — local pre-commit hook.
+- `.gitleaks.toml` — config (extends the default ruleset + hybrid path allowlist).
 - `.gitleaksignore` — the baseline of accepted historical findings.
