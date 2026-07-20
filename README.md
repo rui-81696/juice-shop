@@ -34,6 +34,11 @@ _(em construção — diagrama na Fase 7)_
 | SCA | Trivy | 🔜 |
 | Container scan | Trivy + Hadolint | 🔜 |
 | DAST | OWASP ZAP | 🔜 |
+| IaC security (extra) | Checkov / tfsec + Terraform | 🔜 |
+
+> **Extra phase — Infrastructure as Code.** Beyond the 5 core stages: provision
+> deploy infrastructure with Terraform and gate it with an IaC security scanner
+> (Checkov / tfsec), so misconfigurations are caught before the infra is created.
 
 ---
 
